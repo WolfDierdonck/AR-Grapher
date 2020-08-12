@@ -9,7 +9,7 @@ This mobile app was created in Unity, using the Vuforia engine for the AR compom
 
 The app can be downloaded from the Play Store here. (link required)
 
-## Roadmap
+## Future Updates
 Some possible features that could be added in the future are:
 
 * Allow for additional types of functions such as piece-wise functions.
