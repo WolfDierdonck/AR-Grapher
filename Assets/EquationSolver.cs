@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 
-public class Node {
+class Node {
 
     public string value;
 

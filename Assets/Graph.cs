@@ -6,11 +6,16 @@ public class Graph : MonoBehaviour
 
     Mesh mesh;
 
+    GameObject meshGen;
+    public Gradient test;
+
     Vector3[] vertices;
     int[] triangles;
     Color[] colors;
 
-    public Gradient gradient;
+    Gradient gradient;
+    GradientColorKey[] colorKey;
+    GradientAlphaKey[] alphaKey;
 
     int boundMinX;
     int boundMaxX;
@@ -22,11 +27,38 @@ public class Graph : MonoBehaviour
 
     EquationSolver equationSolver = new EquationSolver();
 
-    void Start()
+    public void GenerateMesh()
     {
 
+        gradient = new Gradient();
+
+        colorKey = new GradientColorKey[7];
+        colorKey[0].color = new Color32(29,61,209,255);
+        colorKey[0].time = 0.0f;
+        colorKey[1].color = new Color32(59,171,226,255);
+        colorKey[1].time = 0.25f;
+        colorKey[2].color = new Color32(61,236,76,255);
+        colorKey[2].time = 0.37f;
+        colorKey[3].color = new Color32(124,241,134,255);
+        colorKey[3].time = 0.56f;
+        colorKey[4].color = new Color32(250,255,102,255);
+        colorKey[4].time = 0.65f;
+        colorKey[5].color = new Color32(255,54,54,255);
+        colorKey[5].time = 0.8f;
+        colorKey[6].color = new Color32(255,50,20,255);
+        colorKey[6].time = 1.0f;
+
+        alphaKey = new GradientAlphaKey[2];
+        alphaKey[0].alpha = 1.0f;
+        alphaKey[0].time = 0.0f;
+        alphaKey[1].alpha = 1.0f;
+        alphaKey[1].time = 1.0f;
+
+        gradient.SetKeys(colorKey, alphaKey);
+
         mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
+        meshGen = GameObject.Find("Mesh Gen");
+        meshGen.GetComponent<MeshFilter>().mesh = mesh;
 
         boundMinX = GraphData.boundMinX;
         boundMaxX = GraphData.boundMaxX;
@@ -83,7 +115,6 @@ public class Graph : MonoBehaviour
 
         maxHeight = (maxHeight > 0.25) ? 0.25 : maxHeight;
         minHeight = (minHeight < -0.25) ? -0.25 : minHeight;
-        Debug.Log($"Max: {maxHeight}     Min: {minHeight}");
 
         double totalHeight = maxHeight-minHeight;
         for (double z = boundMinY; z < boundMaxY; z += (double) (boundMaxY-boundMinY)/GraphData.zSize) {

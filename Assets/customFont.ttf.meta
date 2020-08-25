@@ -1,0 +1,24 @@
+fileFormatVersion: 2
+guid: 11f5ff79436fa1d499c67fb2440b7e90
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Tangerine
+  fontNames:
+  - Tangerine
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 46dff1b4d65567e4db6f350accd7339f, type: 3}
+  - {fileID: 12800000, guid: 64dbaff92239f0745b7b254a91b5e2c1, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
