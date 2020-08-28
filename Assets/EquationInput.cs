@@ -16,7 +16,7 @@ public class EquationInput : MonoBehaviour {
     public GameObject cursor;
 
     public void GetInput() {
-        GraphData.equationString = inputField.text;
+        GraphData.equationString = inputField.text; //turn inputfieldtext into equationsolver syntax
 
         Graph graph = new Graph();
         graph.GenerateMesh();
@@ -59,6 +59,11 @@ public class EquationInput : MonoBehaviour {
                 currentChar--;
             }
         }
+        else if (name == "power") {
+            
+        }
+
+
         else {
             if (currentChar != -1) {
                 inputField.text = inputField.text.Substring(0,currentChar+1) + name + inputField.text.Substring(currentChar+1);

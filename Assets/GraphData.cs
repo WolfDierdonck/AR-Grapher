@@ -1,6 +1,6 @@
 ﻿public static class GraphData
 {
-    public static string equationString = "z=x^3";
+    public static string equationString = "";
     public static int boundMinX = -5;
     public static int boundMaxX = 5;
     public static int boundMinY = -5;
