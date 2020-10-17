@@ -17,106 +17,101 @@ class Node {
     }
 }
 
-public class EquationSolver {
+public class UpdatedEqSolver {
+    string inputEquation;
+    Node root;
+    double x;
+    double y;
 
     string[] functions = new string[8] {"sqrt", "sin", "asin", "cos", "acos", "tan", "atan", "log"};
     string[] operators = new string[5] {"+", "-", "*", "/", "^"};
-    string expression;
-    bool zLeft;
-
-    List<string> operatorStack;
-    List<int> zPath;
-
     Dictionary<string, string> opposites = new Dictionary<string, string>() {
         {"+","-"}, {"-","+"}, {"*","/"}, {"/","*"}, {"sin","asin"}, {"cos","acos"}, {"tan","atan"}
     };
+    bool variableIsLeftSide;
+    List<string> operatorStack;
+    List<int> zPath;
 
-    public double SolveEquation(string input) {
-        VariableSetup(input);
+    public UpdatedEqSolver(string inputEquation) {
+        this.inputEquation = inputEquation;
+        operatorStack = new List<string>();
+        zPath = new List<int>();
+    }
 
-        Node[] roots = CreateTree();
-        Node leftRoot = roots[0];
-        Node rightRoot = roots[1];
+    public void ParseEquation() {
+        #region replace bogus syntax
+        inputEquation = inputEquation.Replace("pi", "3.14159265358979323846");
+        inputEquation = inputEquation.Replace("e", "2.71828182845904523536");
+        inputEquation = inputEquation.Replace("+-", "-");
+        inputEquation = inputEquation.Replace("-+", "-");
+        inputEquation = inputEquation.Replace("--", "+");
+        inputEquation = inputEquation.Replace("-z", "+(z*(-1))");
+        inputEquation = inputEquation.Replace("z","(z)");
+        inputEquation = inputEquation.Replace("-x", "+(x*(-1))");
+        inputEquation = inputEquation.Replace("x","(x)");
+        inputEquation = inputEquation.Replace("-y", "+(y*(-1))");
+        inputEquation = inputEquation.Replace("y","(y)");
+        #endregion
 
-        Node zRoot = zLeft ? leftRoot : rightRoot;
-        Node nonZRoot = !zLeft ? leftRoot : rightRoot;
+        List<string>[] tokens = GetTokens();
+        
+        Node leftRoot = ConvertToTree(tokens[0]);
+        Node rightRoot = ConvertToTree(tokens[1]);
 
+        if (!variableIsLeftSide) { //ensures z is always on left side
+            Node tempRoot = leftRoot;
+            leftRoot = rightRoot;
+            rightRoot = tempRoot;
+        }
+
+        FindZPath(leftRoot, new List<int>());
         Node newRoot;
 
-        FindZPath(zRoot, new List<int>());
+        foreach(int side in zPath) { //Isolates for z
+            Node otherSide = (side == 0) ? leftRoot.right : leftRoot.left;
 
-        foreach(int side in zPath) {
-            Node otherSide = (side == 0) ? zRoot.right : zRoot.left;
-
-            if (zRoot.value == "log") {
+            if (leftRoot.value == "log") {
                 if (side == 0) {
-                    newRoot = new Node("^", otherSide, nonZRoot);
+                    newRoot = new Node("^", otherSide, rightRoot);
                 } else {
-                    newRoot = new Node("sqrt", otherSide, nonZRoot);
+                    newRoot = new Node("sqrt", otherSide, rightRoot);
                 }
             }
-            else if (zRoot.value == "^") {
+            else if (leftRoot.value == "^") {
                 if (side == 0) {
-                    newRoot = new Node("sqrt", nonZRoot, otherSide);
+                    newRoot = new Node("sqrt", rightRoot, otherSide);
                 } else {
-                    newRoot = new Node("log", nonZRoot, otherSide);
+                    newRoot = new Node("log", rightRoot, otherSide);
                 }
             }
-            else if (zRoot.value == "sqrt") {
+            else if (leftRoot.value == "sqrt") {
                 if (side == 0) {
-                    newRoot = new Node("^", nonZRoot, otherSide);
+                    newRoot = new Node("^", rightRoot, otherSide);
                 } else {
-                    newRoot = new Node("log", otherSide, nonZRoot);
+                    newRoot = new Node("log", otherSide, rightRoot);
                 }
             }
             else {
-                newRoot = new Node(opposites[zRoot.value], nonZRoot, otherSide);
+                newRoot = new Node(opposites[leftRoot.value], rightRoot, otherSide);
             }
 
-            zRoot = (side == 0) ? zRoot.left : zRoot.right;
-            nonZRoot = newRoot;
+            leftRoot = (side == 0) ? leftRoot.left : leftRoot.right;
+            rightRoot = newRoot;
         }
 
-        return CalculateNode(nonZRoot);
+        root = rightRoot;
+
     }
 
-
-    private void VariableSetup(string input) { //called once
-        expression = input;
-        operatorStack = new List<string>();
-        zPath = new List<int>();
-        zLeft = false;
-
-        expression = expression.Replace("pi", "3.14159265358979323846");
-        expression = expression.Replace("e", "2.71828182845904523536");
-        expression = expression.Replace("+-", "-");
-        expression = expression.Replace("-+", "-");
-        expression = expression.Replace("--", "+");
-        expression = expression.Replace("-z", "+(z*(-1))");
-        expression = expression.Replace("z","(z)");
-    }
-
-    private Node[] CreateTree() { //called once
-        List<string>[] tokens = GetTokens();
-        List<string> leftTokens = tokens[0];
-        List<string> rightTokens = tokens[1];
-        
-        Node leftRoot = ConvertToTree(leftTokens);
-
-        Node rightRoot = ConvertToTree(rightTokens);
-
-        return new Node[2]{leftRoot, rightRoot};
-    }
-
-    private List<string>[] GetTokens() { //remove
-        string pattern = @"(\b(sqrt|sin|asin|cos|acos|tan|atan|log|z)\b)|([0-9]+\.[0-9]+)|([0-9]+)|[(-+]|[---]|[/-/]|[\^-\^]|[=-=]|[,-,]";
+    private List<string>[] GetTokens() {
+        string pattern = @"(\b(sqrt|sin|asin|cos|acos|tan|atan|log|x|y|z)\b)|([0-9]+\.[0-9]+)|([0-9]+)|[(-+]|[---]|[/-/]|[\^-\^]|[=-=]|[,-,]";
         Regex mainRegex = new Regex(pattern, RegexOptions.IgnoreCase);
         Regex numRegex = new Regex(@"([0-9]+\.[0-9]+)|([0-9]+)", RegexOptions.IgnoreCase);
         List<string> tokens = new List<string>();
 
         string prevMatch = "";
 
-        foreach (Match match in mainRegex.Matches(expression)) {
+        foreach (Match match in mainRegex.Matches(inputEquation)) {
             string current = match.Value;
 
             if ((current == "-" || current == "+") && (prevMatch == "(" || prevMatch == "")) {
@@ -135,11 +130,12 @@ public class EquationSolver {
 
         List<string> leftTokens = new List<string>();
         List<string> rightTokens = new List<string>();
+        variableIsLeftSide = false;
 
         int i = 0;
         while (tokens[i] != "=") {
             if (tokens[i] == "z") {
-                zLeft = true;
+                variableIsLeftSide = true;
             }
             leftTokens.Add(tokens[i]);
             i++;
@@ -168,7 +164,7 @@ public class EquationSolver {
                 nodes.Add(new Node(n.ToString()));
 
             } 
-            else if (token == "z") {
+            else if (token == "z" || token == "x" || token == "y") {
                 nodes.Add(new Node(token));
             }
 
@@ -335,10 +331,23 @@ public class EquationSolver {
 
     }
 
-    private double CalculateNode(Node node) { //keep (recursion)
 
+    public double CalculateFunction(double x, double y) {
+        this.x = x;
+        this.y = y;
+        return CalculateNode(root);
+    }
+
+    private double CalculateNode(Node node) {
         if (node.left == null && node.right == null) {
-            return Convert.ToDouble(node.value);
+            if (node.value == "x") {
+                return x;
+            } else if (node.value == "y") {
+                return y;
+            }
+            else {
+                return Convert.ToDouble(node.value);
+            }
         }
 
         if (node.value == "+") {
@@ -357,7 +366,7 @@ public class EquationSolver {
             return Math.Pow(CalculateNode(node.left),CalculateNode(node.right));
         }
         else if (node.value == "sqrt") {
-            return Math.Pow(CalculateNode(node.left), (double) 1/Convert.ToDouble(node.right.value));
+            return Math.Pow(CalculateNode(node.left), (double) 1/CalculateNode(node.right));
         }
         else if (node.value == "sin") {
             return Math.Sin(CalculateNode(node.left));
@@ -378,10 +387,9 @@ public class EquationSolver {
             return Math.Atan(CalculateNode(node.left));
         }
         else if (node.value == "log") {
-            return Math.Log(CalculateNode(node.left), Convert.ToDouble(node.right.value));
+            return Math.Log(CalculateNode(node.left), CalculateNode(node.right));
         }
 
         return 0.0;
     }
-
 }

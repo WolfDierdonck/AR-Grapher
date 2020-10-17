@@ -25,7 +25,7 @@ public class Graph : MonoBehaviour
     double minHeight = 0.0;
     double maxHeight = 0.0;
 
-    EquationSolver equationSolver = new EquationSolver();
+    UpdatedEqSolver equationSolver;
 
     public void GenerateMesh()
     {
@@ -60,6 +60,9 @@ public class Graph : MonoBehaviour
         meshGen = GameObject.Find("Mesh Gen");
         meshGen.GetComponent<MeshFilter>().mesh = mesh;
 
+        equationSolver = new UpdatedEqSolver(GraphData.equationString);
+        equationSolver.ParseEquation();
+
         boundMinX = GraphData.boundMinX;
         boundMaxX = GraphData.boundMaxX;
         boundMinY = GraphData.boundMinY;
@@ -77,7 +80,7 @@ public class Graph : MonoBehaviour
         for (double z = boundMinY; z < boundMaxY; z += (double) (boundMaxY-boundMinY)/GraphData.zSize) {
 
             for (double x = boundMinX; x < boundMaxX; x += (double) (boundMaxX-boundMinX)/GraphData.xSize) {
-                    double y = GetHeight(Math.Round(x,5),Math.Round(z,5));
+                    double y = equationSolver.CalculateFunction(Math.Round(x,5),Math.Round(z,5));
                     
                     vertices[i] = new Vector3 ((float)x/100,(float) y/100,(float) z/100);
                     i++;
@@ -137,15 +140,6 @@ public class Graph : MonoBehaviour
         mesh.colors = colors;
 
         mesh.RecalculateNormals();
-    }
-
-    private double GetHeight(double x, double z) {
-        string equation = GraphData.equationString;
-
-        equation = equation.Replace("x", "(" + Convert.ToString(x) + ")") ;
-        equation = equation.Replace("y", "(" + Convert.ToString(z) + ")");
-
-        return equationSolver.SolveEquation(equation);
     }
 
 }
