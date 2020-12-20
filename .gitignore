@@ -1,3 +1,5 @@
 /Library
 /Temp
 /Assets/TextMesh\ Pro/Resources/Shaders
+*.keystore
+*.aab
